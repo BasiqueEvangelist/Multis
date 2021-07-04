@@ -1,6 +1,6 @@
 package net.blancworks.multis;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import me.shedaniel.architectury.annotations.ExpectPlatform;
 import net.minecraft.resource.ResourceManager;
 
 import java.util.function.Consumer;
