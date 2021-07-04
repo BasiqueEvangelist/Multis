@@ -1,15 +1,15 @@
 modLoader = "javafml"
 loaderVersion = "[35,)"
 #issueTrackerURL = ""
-license = "LGPL v2.1"
+license = "Insert License Here"
 
 [[mods]]
-modId = "multis"
+modId = "examplemod"
 version = "${version}"
-displayName = "Multis Mod"
-authors = "Blancworks"
+displayName = "Example Mod"
+authors = "Me!"
 description = '''
-A mod that allows runtime creation/destruction of items.
+This is an example description! Tell everyone what your mod is about!
 '''
 #logoFile = ""
 
