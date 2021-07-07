@@ -4,7 +4,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "me.shedaniel:architectury:${rootProject.architectury_version}"
-    modApi 'com.github.Blancworks.Blancworks-API:blancworksapi:-SNAPSHOT'
+    modApi 'com.github.blancworks.blancworks-api:blancworksapi:-SNAPSHOT'
 }
 
 architectury {

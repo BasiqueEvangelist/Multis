@@ -1,18 +1,19 @@
 package net.blancworks.multis.resources;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.network.PacketByteBuf;
 
-/**
- * Multis Objects are generic object assets for Multis that are designed to be swapped out at runtime.
- * Examples of Multis Objects are:
- * Packs
- * Scripts
- * Textures
- * Models
- */
-public abstract class MultisResource {
-    public Identifier id;
+import java.io.InputStream;
 
-    public abstract void onLoad();
-    public abstract void onUnload();
+public abstract class MultisResource<T> {
+    protected T value;
+
+    public T getValue(){
+        return value;
+    }
+
+    public abstract void readFromPacket(PacketByteBuf packet);
+
+    public abstract void writeToPacket(PacketByteBuf packet);
+
+    public abstract void readFromInputStream(InputStream is);
 }

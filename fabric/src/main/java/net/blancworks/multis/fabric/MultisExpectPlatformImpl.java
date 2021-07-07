@@ -12,25 +12,25 @@ public class MultisExpectPlatformImpl {
     public static void registerReloadListener(Consumer<ResourceManager> toRun) {
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
-            public Identifier getFabricId() {
-                return new Identifier("multis", "data");
+            public void apply(ResourceManager manager) {
+                toRun.accept(manager);
             }
 
             @Override
-            public void reload(ResourceManager manager) {
-                toRun.accept(manager);
+            public Identifier getFabricId() {
+                return new Identifier("multis", "data");
             }
         });
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
-            public Identifier getFabricId() {
-                return new Identifier("multis", "assets");
+            public void apply(ResourceManager manager) {
+                toRun.accept(manager);
             }
 
             @Override
-            public void reload(ResourceManager manager) {
-                toRun.accept(manager);
+            public Identifier getFabricId() {
+                return new Identifier("multis", "assets");
             }
         });
     }

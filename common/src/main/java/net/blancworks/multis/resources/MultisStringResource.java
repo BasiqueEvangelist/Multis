@@ -1,19 +1,37 @@
 package net.blancworks.multis.resources;
 
-public class MultisStringResource extends MultisResource {
-    public String string;
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteSource;
+import net.minecraft.network.PacketByteBuf;
 
-    public MultisStringResource(String string){
-        this.string = string;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+
+public class MultisStringResource extends MultisResource<String> {
+    @Override
+    public void readFromPacket(PacketByteBuf packet) {
+        packet.writeString(value);
     }
 
     @Override
-    public void onLoad() {
-
+    public void writeToPacket(PacketByteBuf packet) {
+        value = packet.readString();
     }
 
     @Override
-    public void onUnload() {
+    public void readFromInputStream(InputStream is) {
+        try {
+            ByteSource byteSource = new ByteSource() {
+                @Override
+                public InputStream openStream() throws IOException {
+                    return is;
+                }
+            };
 
+            value = byteSource.asCharSource(Charsets.UTF_8).read();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

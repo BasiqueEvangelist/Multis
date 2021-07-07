@@ -1,9 +1,8 @@
 package net.blancworks.multis;
 
-import me.shedaniel.architectury.utils.Env;
-import me.shedaniel.architectury.utils.EnvExecutor;
-import net.blancworks.multis.loader.MultisPackManager;
+import net.blancworks.multis.datapack.MultisDatapackManager;
 import net.blancworks.multis.minecraft.item.MultisMinecraftItem;
+import net.blancworks.multis.networking.MultisNetworkManager;
 
 /**
  * Root instance of the Multis Mod.
@@ -18,21 +17,21 @@ public class MultisMod {
      * Init client-server common systems.
      */
     public static void init_common() {
-        MultisExpectPlatform.registerReloadListener(MultisPackManager::loadResourcePacksIntoMultisPacks);
+        MultisExpectPlatform.registerReloadListener(MultisDatapackManager::onDatapackReload);
     }
 
     /**
      * Init client-specific systems.
      */
     public static void init_client() {
-
+        MultisNetworkManager.client_init();
     }
 
     /**
      * Init server-specific systems.
      */
     public static void init_server() {
-
+        MultisNetworkManager.server_init();
     }
 
 }
