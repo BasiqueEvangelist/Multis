@@ -1,7 +1,7 @@
 package net.blancworks.multis.objects.item;
 
 import net.blancworks.multis.MultisMod;
-import net.blancworks.multis.mixins.accessors.ItemStackAccessor;
+import net.blancworks.multis.access.ItemStackAccessor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 

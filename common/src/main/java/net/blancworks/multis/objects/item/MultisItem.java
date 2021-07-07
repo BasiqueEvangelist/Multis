@@ -2,7 +2,7 @@ package net.blancworks.multis.objects.item;
 
 import net.blancworks.api.rendering.models.BWModel;
 import net.blancworks.multis.resources.MultisResource;
-import net.blancworks.multis.resources.MultisResourcePack;
+import net.blancworks.multis.resources.MultisResourceSet;
 import net.minecraft.util.Identifier;
 
 /**
@@ -14,16 +14,12 @@ public class MultisItem {
     public Identifier id;
 
     public MultisResource<String> scriptSource;
-    public MultisResource<BWModel> model;
 
-    public MultisResourcePack targetPack;
-
-    public MultisItem(Identifier id, MultisResourcePack pack){
+    public MultisItem(Identifier id){
         this.id = id;
-        targetPack = pack;
 
-        scriptSource = pack.scriptSet.getResource(id);
-        pack.scriptSet.addListener(id, this::onScriptReload);
+        scriptSource = MultisResourceSet.getResource(id);
+        MultisResourceSet.addListener(id, this::onScriptReload);
     }
 
 
@@ -32,6 +28,6 @@ public class MultisItem {
     }
 
     public void onUnload(){
-        targetPack.scriptSet.removeListener(id, this::onScriptReload);
+        MultisResourceSet.removeListener(id, this::onScriptReload);
     }
 }

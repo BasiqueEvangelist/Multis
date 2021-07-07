@@ -4,7 +4,7 @@ import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.event.events.PlayerEvent;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.blancworks.multis.resources.MultisResource;
-import net.blancworks.multis.resources.MultisResourcePack;
+import net.blancworks.multis.resources.MultisResourceSet;
 import net.blancworks.multis.resources.MultisResourceType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -52,8 +52,8 @@ public class MultisNetworkManager {
 
     private static void supplyAllResourcesToPlayer(ServerPlayerEntity player) {
         CompletableFuture.runAsync(() -> {
-            MultisResourcePack.scriptSet.forEach((id, r) -> {
-                supplyResourceToPlayer(player, MultisResourceType.Script, id);
+            MultisResourceSet.forEach((id, r) -> {
+                supplyResourceToPlayer(player, id);
             });
         });
     }
@@ -65,30 +65,28 @@ public class MultisNetworkManager {
      * @param type   The type of resource it is.
      * @param id     The ID of the resource.
      */
-    public static void supplyResourceToPlayer(ServerPlayerEntity target, MultisResourceType type, Identifier id) {
-        MultisResource resource = MultisResourcePack.getResource(type, id);
+    public static void supplyResourceToPlayer(ServerPlayerEntity target, Identifier id) {
+        MultisResource resource = MultisResourceSet.getResource(id);
 
         if (resource == null) return;
 
         PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 
         buffer.writeIdentifier(id);
-        buffer.writeInt(type.ordinal());
         resource.writeToPacket(buffer);
 
         NetworkManager.sendToPlayer(target, SERVER_SUPPLY_RESOURCE_ID, buffer);
         System.out.println("Sending resource " + id + " to player " + target.getName().asString());
     }
 
-    public static void supplyResourceToAllPlayers(MultisResourceType type, Identifier id) {
-        MultisResource resource = MultisResourcePack.getResource(type, id);
+    public static void supplyResourceToAllPlayers(Identifier id) {
+        MultisResource resource = MultisResourceSet.getResource(id);
 
         if (resource == null) return;
 
         PacketByteBuf buffer = getBuffer();
 
         buffer.writeIdentifier(id);
-        buffer.writeInt(type.ordinal());
         resource.writeToPacket(buffer);
 
         NetworkManager.sendToPlayers(all_players, SERVER_SUPPLY_RESOURCE_ID, buffer);
@@ -96,7 +94,7 @@ public class MultisNetworkManager {
 
     public static void clientReceiveResourceFromServer(PacketByteBuf packetByteBuf, NetworkManager.PacketContext packetContext) {
         Identifier id = packetByteBuf.readIdentifier();
-        MultisResourceType type = MultisResourceType.values()[packetByteBuf.readInt()];
-        System.out.println("Got resource " + id + " to player " + packetContext.getPlayer().getName().asString());
+
+        System.out.println("Got resource " + id + " to player ");
     }
 }

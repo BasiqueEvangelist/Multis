@@ -19,6 +19,9 @@
       "net.blancworks.multis.fabric.MultisModFabric"
     ]
   },
+  "mixins": [
+    "multis-common.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric": "*",

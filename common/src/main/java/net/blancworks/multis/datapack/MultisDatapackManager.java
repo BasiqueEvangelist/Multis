@@ -1,9 +1,9 @@
 package net.blancworks.multis.datapack;
 
 import com.google.gson.JsonObject;
+import net.blancworks.multis.access.ReloadableResourceManagerImplAccessor;
 import net.blancworks.multis.networking.MultisNetworkManager;
-import net.blancworks.multis.resources.MultisResourcePack;
-import net.blancworks.multis.resources.MultisResourceType;
+import net.blancworks.multis.resources.MultisResourceSet;
 import net.blancworks.multis.resources.MultisStringResource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourcePack;
@@ -35,7 +35,9 @@ public class MultisDatapackManager {
 
         SortedSet<MultisPackMetadata> packMetas = new TreeSet<MultisPackMetadata>(Comparator.comparingInt(k -> k.priority));
 
-        manager.streamResourcePacks().forEach((pack) -> {
+        ReloadableResourceManagerImplAccessor accessor = (ReloadableResourceManagerImplAccessor)manager;
+
+        accessor.multis_getPackList().stream().forEach((pack) -> {
             try {
                 MultisPackMetadata md = pack.parseMetadata(reader);
 
@@ -66,7 +68,7 @@ public class MultisDatapackManager {
         for (String namespace : pack.getNamespaces(ResourceType.SERVER_DATA)) {
 
             //Get all scripts
-            Collection<Identifier> scriptIDs = pack.findResources(ResourceType.SERVER_DATA, namespace, "scripts", 100, p -> p.endsWith(".lua"));
+            Collection<Identifier> scriptIDs = pack.findResources(ResourceType.SERVER_DATA, namespace, "scripts/items", 100, p -> p.endsWith(".lua"));
 
             for (Identifier scriptID : scriptIDs) {
                 try {
@@ -75,16 +77,13 @@ public class MultisDatapackManager {
                     MultisStringResource stringResource = new MultisStringResource();
                     stringResource.readFromInputStream(is);
 
-                    MultisResourcePack.scriptSet.setResource(scriptID, stringResource);
-
-                    MultisNetworkManager.supplyResourceToAllPlayers(MultisResourceType.Script, scriptID);
+                    MultisResourceSet.setResource(scriptID, stringResource);
 
                     is.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-
         }
 
     }

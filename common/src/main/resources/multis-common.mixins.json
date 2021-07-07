@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.blancworks.multis.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ReloadableResourceManagerImplMixin"
+  ],
+  "client": [
+
+  ],
+  "server": [
+
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

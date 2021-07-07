@@ -1,4 +1,4 @@
-package net.blancworks.multis.mixins.accessors;
+package net.blancworks.multis.access;
 
 import net.blancworks.multis.objects.item.MultisItem;
 

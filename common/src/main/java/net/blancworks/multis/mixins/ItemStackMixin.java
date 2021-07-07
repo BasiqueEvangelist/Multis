@@ -1,6 +1,6 @@
 package net.blancworks.multis.mixins;
 
-import net.blancworks.multis.mixins.accessors.ItemStackAccessor;
+import net.blancworks.multis.access.ItemStackAccessor;
 import net.blancworks.multis.objects.item.MultisItem;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
