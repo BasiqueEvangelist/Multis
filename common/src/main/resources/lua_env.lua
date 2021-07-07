@@ -1,3 +1,12 @@
+--This is the main class that handles all things multis-related from the lua-side.
+--Most of this behaviour is written in lua for both ease of use as well as efficiency (not having to move memory between
+-- java and native code all the time)
+
+
+
+
+
+
 --Global value shared between all objects in a pack.
 --Only re-loads on a proper pack reload command.
 packGlobals = {}
