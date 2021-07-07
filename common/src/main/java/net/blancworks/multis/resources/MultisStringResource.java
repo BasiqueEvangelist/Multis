@@ -11,12 +11,12 @@ import java.nio.charset.Charset;
 public class MultisStringResource extends MultisResource<String> {
     @Override
     public void readFromPacket(PacketByteBuf packet) {
-        packet.writeString(value);
+        value = packet.readString();
     }
 
     @Override
     public void writeToPacket(PacketByteBuf packet) {
-        value = packet.readString();
+        packet.writeString(value);
     }
 
     @Override
