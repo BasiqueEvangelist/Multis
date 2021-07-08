@@ -26,6 +26,9 @@ dependencies {
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) {
         transitive = false
     }
+
+    modApi "com.github.Blancworks.Blancworks-API:blancworksapi-fabric:-SNAPSHOT"
+
 }
 
 processResources {

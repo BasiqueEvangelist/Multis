@@ -2,8 +2,7 @@ package net.blancworks.multis.datapack;
 
 import com.google.gson.JsonObject;
 import net.blancworks.multis.access.ReloadableResourceManagerImplAccessor;
-import net.blancworks.multis.networking.MultisNetworkManager;
-import net.blancworks.multis.resources.MultisResourceSet;
+import net.blancworks.multis.resources.MultisResourceManager;
 import net.blancworks.multis.resources.MultisStringResource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourcePack;
@@ -77,7 +76,7 @@ public class MultisDatapackManager {
                     MultisStringResource stringResource = new MultisStringResource();
                     stringResource.readFromInputStream(is);
 
-                    MultisResourceSet.setResource(scriptID, stringResource);
+                    MultisResourceManager.setResource(scriptID, stringResource);
 
                     is.close();
                 } catch (Exception e) {

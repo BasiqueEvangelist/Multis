@@ -1,5 +1,7 @@
 package net.blancworks.multis.resources;
 
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
@@ -8,17 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
- * A set of resources for Multis.
- *
- * @param <T> The type of resource to store in this set.
+ * The collection of all resources for Multis.
  */
-public class MultisResourceSet {
+public class MultisResourceManager {
     private static final Map<Identifier, MultisResource> resources = new HashMap<>();
 
     private static final Map<Identifier, List<Consumer<MultisResource>>> changeListeners = new HashMap<>();
-
 
     public static synchronized MultisResource setResource(Identifier id, MultisResource resource) {
         MultisResource ret = resources.put(id, resource);
@@ -57,7 +57,4 @@ public class MultisResourceSet {
         }
     }
 
-    public static synchronized void forEach(BiConsumer<Identifier, MultisResource> consumer){
-        resources.forEach(consumer);
-    }
 }

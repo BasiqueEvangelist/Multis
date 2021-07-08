@@ -2,51 +2,85 @@
 --Most of this behaviour is written in lua for both ease of use as well as efficiency (not having to move memory between
 -- java and native code all the time)
 
-
-
-
+print("Loading Multis Lua Environment")
 
 
 --Global value shared between all objects in a pack.
 --Only re-loads on a proper pack reload command.
-packGlobals = {}
+objectSets = {}
 
 --Loads a script into the pack's lua environment.
 -- src : The source code for the object, as a string.
 -- table : The target table for the object. Will be cleared, or if nil, created.
-function loadMultisObject(src, table)
-    --Use or create table.
-    local objectGlobal = getObjectSandboxTable(table)
+function loadMultisObject(src, id)
+
+    --Split ID by namespace with :
+    local splitID = {}
+    for w in id:gmatch("([^:]+)") do
+        table.insert(splitID, w)
+    end
+
+    local namespace = splitID[1] --Namespace for object.
+    local location = splitID[2] --Object location.
+
+    local set = getOrCreateSet(namespace) --The set to put this object into.
+
+    local objectGlobal = getObjectSandboxTable(set, location) --The _G object for the object we're about to create.
 
     --Load the source code into a chunk.
-    local objectScript = loadString(src)
+    local objectScript = load(src, location, "bt" ,objectGlobal)
 
-    --Set global env for script.
-    setfenv(objectScript, objectGlobal)
 
-    debug.sethook(instructionLimit, 'c', 65536)
+    debug.sethook(instructionLimit, '', 65536)
     --Run the script for the given item
-    pcall(objectScript())
+    pcall(objectScript)
 
     return table
 end
 
+function getOrCreateSet(namespace)
+    local setTable = objectSets[namespace]
+
+    --Creat set if needed
+    if setTable == nil then
+        setTable = {}
+        objectSets[namespace] = setTable
+
+        --Assign single variable: global
+        --Name can never be taken because sets can only be assigned by minecraft identifiers, which can't be empty.
+        objectSets.global = {}
+    end
+
+    return setTable
+end
 
 -- SANDBOXING --
 
 
 --Returns a new table for an object that contains all the globals for it.
-function getObjectSandboxTable(existingTable)
+function getObjectSandboxTable(set, location)
+    local objectTable = set[location] --Get table if it exist
+    --Create one if it doesn't.
+    if objectTable == nil then
+        objectTable = {}
+        set[location] = objectTable
+    end
+
     --Create table
-    local sandbox = existingTable or {}
+    local sandbox = objectTable
 
     --Clear table.
-    for k, v in pairs(sandbox) do sandbox[k] = nil end
-    for i, v in ipairs(sandbox) do sandbox[i] = nil end
+    for k, v in pairs(sandbox) do
+        sandbox[k] = nil
+    end
+    for i, v in ipairs(sandbox) do
+        sandbox[i] = nil
+    end
 
     --Set shared globals.
-    sandbox.globals = packGlobals
+    sandbox.globals = set.globals
 
+    --Set sandbox whitelist
     sandbox.math = mathProxy
     sandbox.table = tableProxy
     sandbox.string = stringProxy
@@ -82,7 +116,8 @@ function getReadonlyProxyTable(table)
 
         --New index (putting a value into table).
         --Does nothing for readonly proxy tables.
-        __newindex = function(t, k, v) end
+        __newindex = function(t, k, v)
+        end
     }
 
     setmetatable(proxy, mt)
@@ -100,14 +135,5 @@ end
 
 -- OBJECT MANAGEMENT --
 
---Registers a multis object into a table using a given script source.
---Clears and re-initializes the table for that object, if one exists. Otherwise, creates a new one.
-function registerObject(target, src, id)
-    target[id] = loadMultisObject(src, target[id])
-end
 
---Unregisters a multis object from a table.
---Basically just sets the table for the object to nil.
-function unregisterObject(target, id)
-    target[id] = nil
-end
+print("Environment Created!")
