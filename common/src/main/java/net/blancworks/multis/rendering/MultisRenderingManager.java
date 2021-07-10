@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import me.shedaniel.architectury.event.events.client.ClientPlayerEvent;
 import net.blancworks.api.rendering.textures.BWAtlas;
 import net.blancworks.multis.MultisExpectPlatform;
-import net.blancworks.multis.objects.item.MultisItemManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelTransformation;
@@ -63,7 +62,7 @@ public class MultisRenderingManager {
                 is.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return null;

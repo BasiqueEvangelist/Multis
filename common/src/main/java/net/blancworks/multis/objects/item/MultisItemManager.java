@@ -6,20 +6,23 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 public class MultisItemManager {
+
+    private static Queue<MultisItem> itemCache = new LinkedList<>();
 
     public static final Map<Identifier, MultisItem> itemRegistry = new HashMap<>();
     public static MultisItem emptyItem;
 
     public static void clear() {
+        for (Map.Entry<Identifier, MultisItem> entry : itemRegistry.entrySet()) {
+            entry.getValue().onUnload();
+            itemCache.add(entry.getValue());
+        }
         itemRegistry.clear();
-    }
-
-    public static void registerItem(Identifier id, MultisItem item) {
-        item.id = id;
-        itemRegistry.put(id, item);
     }
 
     /**
@@ -86,6 +89,11 @@ public class MultisItemManager {
      * @return The item if found, null otherwise.
      */
     public static MultisItem getItemAtLocation(Identifier id) {
-        return itemRegistry.get(id);
+        return itemRegistry.computeIfAbsent(id, (i) -> {
+            MultisItem newItem = itemCache.size() > 0 ? itemCache.remove() : new MultisItem();
+            newItem.init(i);
+
+            return newItem;
+        });
     }
 }

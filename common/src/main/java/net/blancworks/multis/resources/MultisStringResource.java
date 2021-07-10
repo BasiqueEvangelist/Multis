@@ -1,16 +1,23 @@
 package net.blancworks.multis.resources;
 
 import com.google.common.base.Charsets;
-import com.google.common.io.ByteSource;
 import net.minecraft.network.PacketByteBuf;
+import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 public class MultisStringResource extends MultisResource<String> {
     @Override
-    public void readFromPacket(PacketByteBuf packet) {
-        value = packet.readString();
+    public boolean readFromPacket(PacketByteBuf packet) {
+        String newVal = packet.readString();
+
+        if(!newVal.equals(value)) {
+            value = newVal;
+
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -19,19 +26,19 @@ public class MultisStringResource extends MultisResource<String> {
     }
 
     @Override
-    public void readFromInputStream(InputStream is) {
+    public boolean readFromInputStream(InputStream is) {
         try {
-            ByteSource byteSource = new ByteSource() {
-                @Override
-                public InputStream openStream() throws IOException {
-                    return is;
-                }
-            };
+            String newVal = IOUtils.toString(is, Charsets.UTF_8);
 
-            value = byteSource.asCharSource(Charsets.UTF_8).read();
+            if (!newVal.equals(value)) {
+                value = newVal;
+                return true;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return false;
     }
 
     @Override

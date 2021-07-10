@@ -1,7 +1,5 @@
 package net.blancworks.multis;
 
-import me.shedaniel.architectury.event.events.PlayerEvent;
-import me.shedaniel.architectury.event.events.client.ClientPlayerEvent;
 import me.shedaniel.architectury.registry.DeferredRegister;
 import me.shedaniel.architectury.registry.RegistrySupplier;
 import net.blancworks.api.scripting.scripts.BWLuaScript;

@@ -2,8 +2,7 @@ package net.blancworks.multis.datapack;
 
 import com.google.gson.JsonObject;
 import net.blancworks.multis.access.ReloadableResourceManagerImplAccessor;
-import net.blancworks.multis.objects.MultisObjectManager;
-import net.blancworks.multis.objects.item.MultisItem;
+import net.blancworks.multis.networking.MultisNetworkManager;
 import net.blancworks.multis.resources.MultisResourceManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourcePack;
@@ -13,10 +12,7 @@ import net.minecraft.util.Identifier;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -71,9 +67,13 @@ public class MultisDatapackManager {
             //Get all textures
             Collection<Identifier> modelIDs = pack.findResources(ResourceType.CLIENT_RESOURCES, namespace, "multis/models", 100, p -> p.endsWith(".png"));
 
+            LinkedList<Identifier> changedIDs = new LinkedList<>();
+
             foreachIDToInputStream(modelIDs, pack, ResourceType.CLIENT_RESOURCES, (is, id) -> {
                 id = new Identifier(id.getNamespace(), id.getPath().replace(".json", ""));
-                MultisResourceManager.readResourceFromInputStream("string", id, is);
+                boolean changed = MultisResourceManager.readResourceFromInputStream("string", id, is);
+                if(changed)
+                    changedIDs.add(id);
             });
 
             //Get all models
@@ -81,7 +81,10 @@ public class MultisDatapackManager {
 
             foreachIDToInputStream(textureIDs, pack, ResourceType.CLIENT_RESOURCES, (is, id) -> {
                 id = new Identifier(id.getNamespace(), id.getPath().replace(".png", ""));
-                MultisResourceManager.readResourceFromInputStream("binary", id, is);
+                boolean changed = MultisResourceManager.readResourceFromInputStream("binary", id, is);
+
+                if(changed)
+                    changedIDs.add(id);
             });
 
             //Get all item scripts
@@ -92,10 +95,17 @@ public class MultisDatapackManager {
                 String[] splitPath = id.getPath().split("/");
                 String itemName = splitPath[splitPath.length - 1];
 
-                MultisItem item = MultisObjectManager.registerItem(new Identifier(id.getNamespace(), itemName), false);
+                boolean changed = MultisResourceManager.readResourceFromInputStream("string", id, is);
 
-                MultisResourceManager.readResourceFromInputStream("string", id, is);
+                if(changed)
+                    changedIDs.add(id);
             });
+
+            for (Identifier id : changedIDs) {
+                System.out.println("ASSET AT ID " + id + " CHANGED");
+
+                MultisNetworkManager.onAssetUpdate(id);
+            }
         }
     }
 

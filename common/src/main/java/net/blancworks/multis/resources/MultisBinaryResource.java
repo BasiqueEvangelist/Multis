@@ -4,27 +4,42 @@ import net.minecraft.network.PacketByteBuf;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class MultisBinaryResource extends MultisResource<byte[]> {
 
     @Override
-    public void readFromPacket(PacketByteBuf packet) {
-        packet.writeByteArray(this.value);
+    public boolean readFromPacket(PacketByteBuf packet) {
+        byte[] newDat = packet.readByteArray();
+
+        if (!Arrays.equals(newDat, this.value)) {
+            this.value = newDat;
+            return true;
+        }
+
+        return false;
     }
 
     @Override
     public void writeToPacket(PacketByteBuf packet) {
-        this.value = packet.readByteArray();
+        packet.writeByteArray(this.value);
     }
 
     @Override
-    public void readFromInputStream(InputStream is) {
+    public boolean readFromInputStream(InputStream is) {
         try {
-            this.value = new byte[is.available()];
-            is.read(this.value);
+            byte[] newDat = new byte[is.available()];
+            is.read(newDat);
+
+            if (!Arrays.equals(newDat, value)) {
+                value = newDat;
+                return true;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return false;
     }
 
     @Override

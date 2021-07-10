@@ -29,9 +29,8 @@ public class MultisItem {
 
     public MultisItemModel model;
 
-    public MultisItem(Identifier id) {
+    public void init(Identifier id) {
         this.id = id;
-
 
         //Script ID is the same namespace and item name, but the path is slightly modified.
         scriptID = new Identifier(id.getNamespace(), "multis/scripts/items/" + id.getPath());
@@ -50,10 +49,7 @@ public class MultisItem {
         MultisResourceManager.addListener(modelID, this::onModelReload);
         //Initial model "reload"
         onModelReload(MultisResourceManager.getResource(modelID));
-
-
     }
-
 
     public void onScriptReload(MultisResource<String> source) {
         scriptSource = (MultisStringResource) source;
@@ -79,7 +75,17 @@ public class MultisItem {
     }
 
     public void onUnload() {
-        MultisResourceManager.removeListener(id, this::onScriptReload);
+        MultisResourceManager.removeListener(scriptID, this::onScriptReload);
+        MultisResourceManager.removeListener(modelID, this::onModelReload);
+
+        scriptSource = null;
+        model = null;
+
+        luaInterface = null;
+
+        scriptID = null;
+        modelID = null;
+        textureID = null;
     }
 
     private interface MultisLuaInterface {

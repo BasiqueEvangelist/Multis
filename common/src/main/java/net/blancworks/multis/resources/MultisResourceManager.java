@@ -1,16 +1,13 @@
 package net.blancworks.multis.resources;
 
 import me.shedaniel.architectury.event.events.client.ClientPlayerEvent;
+import net.blancworks.multis.lua.LuaEnvironment;
 import net.blancworks.multis.objects.item.MultisItemManager;
-import net.blancworks.multis.rendering.MultisItemModel;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -33,6 +30,7 @@ public class MultisResourceManager {
             if (p != null) {
                 resources.clear();
                 MultisItemManager.clear();
+                LuaEnvironment.clear();
             }
         });
     }
@@ -87,6 +85,8 @@ public class MultisResourceManager {
         Identifier id = packet.readIdentifier();
         String type = packet.readString();
 
+        System.out.println("READING ASSET " + id + " OF TYPE " + type + " FROM PACKET");
+
         Supplier<MultisResource> factory = resourceFactories.get(type);
 
         if (factory == null) {
@@ -94,10 +94,14 @@ public class MultisResourceManager {
             return null;
         }
 
-        MultisResource rsc = factory.get();
-        rsc.readFromPacket(packet);
+        MultisResource rsc = getResource(id);
+        if (rsc == null)
+            rsc = factory.get();
 
-        setResource(id, rsc);
+        boolean changed = rsc.readFromPacket(packet);
+
+        if (changed)
+            setResource(id, rsc);
 
         return rsc;
     }
@@ -108,22 +112,26 @@ public class MultisResourceManager {
      * @param type The type of the resource.
      * @param id   The ID of the resource.
      * @param is   The input stream for the resource.
-     * @return The resource that was created.
+     * @return True if the asset changed, false otherwise.
      */
-    public static synchronized MultisResource readResourceFromInputStream(String type, Identifier id, InputStream is) {
+    public static synchronized boolean readResourceFromInputStream(String type, Identifier id, InputStream is) {
         Supplier<MultisResource> factory = resourceFactories.get(type);
 
         if (factory == null) {
             //TODO add error
-            return null;
+            return false;
         }
 
-        MultisResource rsc = factory.get();
-        rsc.readFromInputStream(is);
+        MultisResource rsc = getResource(id);
+        if (rsc == null)
+            rsc = factory.get();
 
-        setResource(id, rsc);
+        boolean changed = rsc.readFromInputStream(is);
 
-        return rsc;
+        if (changed)
+            setResource(id, rsc);
+
+        return changed;
     }
 
     /**
@@ -132,15 +140,22 @@ public class MultisResourceManager {
      * @param id  The ID of the resource to write.
      * @param buf The packet to write into.
      */
-    public static synchronized void writeResourceToPacket(Identifier id, PacketByteBuf buf) {
+    public static synchronized boolean writeResourceToPacket(Identifier id, PacketByteBuf buf) {
         MultisResource rsc = resources.get(id);
 
         if (rsc == null)
-            return;
+            return false;
 
         buf.writeIdentifier(id);
         buf.writeString(rsc.getFactoryID());
         rsc.writeToPacket(buf);
+
+        return true;
     }
 
+    public static synchronized void fillAssetQueue(Queue<Identifier> idQueue) {
+        for (Map.Entry<Identifier, MultisResource> entry : resources.entrySet()) {
+            idQueue.add(entry.getKey());
+        }
+    }
 }

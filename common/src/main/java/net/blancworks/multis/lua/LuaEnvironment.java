@@ -60,4 +60,11 @@ public class LuaEnvironment {
 
         return gotten;
     }
+
+    public static void clear(){
+        luaState.close();
+
+        luaState = new LuaState53();
+        loadEnvironment();
+    }
 }
