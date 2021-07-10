@@ -6,7 +6,6 @@ import net.minecraft.network.PacketByteBuf;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 public class MultisStringResource extends MultisResource<String> {
     @Override
@@ -33,5 +32,10 @@ public class MultisStringResource extends MultisResource<String> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getFactoryID() {
+        return "string";
     }
 }

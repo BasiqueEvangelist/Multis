@@ -10,10 +10,12 @@ import java.util.Map;
 
 public class MultisItemManager {
 
-    private static final Map<Identifier, MultisItem> itemRegistry = new HashMap<>();
-    private static MultisItem emptyItem;
+    public static final Map<Identifier, MultisItem> itemRegistry = new HashMap<>();
+    public static MultisItem emptyItem;
 
-
+    public static void clear() {
+        itemRegistry.clear();
+    }
 
     public static void registerItem(Identifier id, MultisItem item) {
         item.id = id;
@@ -57,11 +59,12 @@ public class MultisItemManager {
 
     /**
      * Sets an item to a stack given an ID.
+     *
      * @param accessor The ItemStackAccessor for the item stack.
-     * @param id The ID to attempt to set the item to.
+     * @param id       The ID to attempt to set the item to.
      * @return The item the stack was set to.
      */
-    private static MultisItem setItemFromID(ItemStackAccessor accessor, Identifier id){
+    private static MultisItem setItemFromID(ItemStackAccessor accessor, Identifier id) {
         //Find multis item at NBT tag location
         MultisItem itemAtID = getItemAtLocation(id);
 
@@ -78,6 +81,7 @@ public class MultisItemManager {
 
     /**
      * Gets an item at a location in the registry.
+     *
      * @param id The location of the item in the registry.
      * @return The item if found, null otherwise.
      */

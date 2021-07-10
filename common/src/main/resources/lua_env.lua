@@ -35,7 +35,7 @@ function loadMultisObject(src, id)
     --Run the script for the given item
     pcall(objectScript)
 
-    return table
+    return objectGlobal
 end
 
 function getOrCreateSet(namespace)
@@ -48,7 +48,7 @@ function getOrCreateSet(namespace)
 
         --Assign single variable: global
         --Name can never be taken because sets can only be assigned by minecraft identifiers, which can't be empty.
-        objectSets.global = {}
+        setTable.globals = {}
     end
 
     return setTable

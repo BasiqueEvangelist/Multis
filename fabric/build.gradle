@@ -27,7 +27,7 @@ dependencies {
         transitive = false
     }
 
-    modApi "com.github.Blancworks.Blancworks-API:blancworksapi-fabric:-SNAPSHOT"
+    modApi "com.github.blancworks.blancworks-api:blancworksapi-fabric:${rootProject.bwapi_version}"
 
 }
 

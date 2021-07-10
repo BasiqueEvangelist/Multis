@@ -11,9 +11,26 @@ public abstract class MultisResource<T> {
         return value;
     }
 
+    /**
+     * Reads the resource from a packet.
+     * @param packet
+     */
     public abstract void readFromPacket(PacketByteBuf packet);
 
+    /**
+     * Writes the resource into a packet.
+     * @param packet
+     */
     public abstract void writeToPacket(PacketByteBuf packet);
 
+    /**
+     * Reads the resource from an InputStream.
+     * @param is
+     */
     public abstract void readFromInputStream(InputStream is);
+
+    /**
+     * @return The ID of the factory used to create this resource.
+     */
+    public abstract String getFactoryID();
 }

@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 public class MultisExpectPlatform {
 
     @ExpectPlatform
-    public static void registerReloadListener(Consumer<ResourceManager> toRun){
+    public static void registerReloadListener(String ID, Consumer<ResourceManager> toRun){
         throw new AssertionError();
     }
 }

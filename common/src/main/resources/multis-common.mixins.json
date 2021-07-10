@@ -4,13 +4,13 @@
   "package": "net.blancworks.multis.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "ReloadableResourceManagerImplMixin"
+    "ReloadableResourceManagerImplMixin",
+    "ItemStackMixin",
+    "ItemRendererMixin"
   ],
   "client": [
-
   ],
   "server": [
-
   ],
   "injectors": {
     "defaultRequire": 1

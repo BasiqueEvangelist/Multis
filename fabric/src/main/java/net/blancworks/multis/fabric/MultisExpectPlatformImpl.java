@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 import java.util.function.Consumer;
 
 public class MultisExpectPlatformImpl {
-    public static void registerReloadListener(Consumer<ResourceManager> toRun) {
+    public static void registerReloadListener(String ID, Consumer<ResourceManager> toRun) {
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public void apply(ResourceManager manager) {
@@ -18,7 +18,7 @@ public class MultisExpectPlatformImpl {
 
             @Override
             public Identifier getFabricId() {
-                return new Identifier("multis", "data");
+                return new Identifier("multis_" + ID, "data");
             }
         });
 
@@ -30,7 +30,7 @@ public class MultisExpectPlatformImpl {
 
             @Override
             public Identifier getFabricId() {
-                return new Identifier("multis", "assets");
+                return new Identifier("multis_" + ID, "assets");
             }
         });
     }

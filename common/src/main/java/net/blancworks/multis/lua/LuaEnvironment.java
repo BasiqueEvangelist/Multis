@@ -1,12 +1,9 @@
 package net.blancworks.multis.lua;
 
 import com.google.common.base.Charsets;
-import net.blancworks.api.scripting.scripts.BWLuaScript;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
-import org.terasology.jnlua.LuaState;
 import org.terasology.jnlua.LuaState53;
-import org.terasology.jnlua.NamedJavaFunction;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,10 +41,23 @@ public class LuaEnvironment {
         }
     }
 
-    private static void loadMultisScript(String src, Identifier id){
+    private static void loadMultisScript(String src, Identifier id) {
         luaState.getGlobal("loadMultisObject");
         luaState.pushString(src);
         luaState.pushString(id.toString());
         luaState.call(2, 0);
+    }
+
+    public static <T> T loadMultisObject(String src, Identifier id, Class c) {
+        luaState.getGlobal("loadMultisObject");
+        luaState.pushString(src);
+        luaState.pushString(id.toString());
+        luaState.call(2, 1);
+
+        T gotten = (T) luaState.getProxy(-1, c);
+
+        luaState.pop(1);
+
+        return gotten;
     }
 }

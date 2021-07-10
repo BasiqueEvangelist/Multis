@@ -2,8 +2,9 @@ package net.blancworks.multis.datapack;
 
 import com.google.gson.JsonObject;
 import net.blancworks.multis.access.ReloadableResourceManagerImplAccessor;
+import net.blancworks.multis.objects.MultisObjectManager;
+import net.blancworks.multis.objects.item.MultisItem;
 import net.blancworks.multis.resources.MultisResourceManager;
-import net.blancworks.multis.resources.MultisStringResource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourcePack;
 import net.minecraft.resource.ResourceType;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 
 /**
  * This class is responsible for loading and file-watching assets from datapacks.
@@ -34,7 +36,7 @@ public class MultisDatapackManager {
 
         SortedSet<MultisPackMetadata> packMetas = new TreeSet<MultisPackMetadata>(Comparator.comparingInt(k -> k.priority));
 
-        ReloadableResourceManagerImplAccessor accessor = (ReloadableResourceManagerImplAccessor)manager;
+        ReloadableResourceManagerImplAccessor accessor = (ReloadableResourceManagerImplAccessor) manager;
 
         accessor.multis_getPackList().stream().forEach((pack) -> {
             try {
@@ -66,25 +68,48 @@ public class MultisDatapackManager {
         //Iterate server data (json and scripts)
         for (String namespace : pack.getNamespaces(ResourceType.SERVER_DATA)) {
 
-            //Get all scripts
-            Collection<Identifier> scriptIDs = pack.findResources(ResourceType.SERVER_DATA, namespace, "scripts/items", 100, p -> p.endsWith(".lua"));
+            //Get all textures
+            Collection<Identifier> modelIDs = pack.findResources(ResourceType.CLIENT_RESOURCES, namespace, "multis/models", 100, p -> p.endsWith(".png"));
 
-            for (Identifier scriptID : scriptIDs) {
-                try {
-                    InputStream is = pack.open(ResourceType.SERVER_DATA, scriptID);
+            foreachIDToInputStream(modelIDs, pack, ResourceType.CLIENT_RESOURCES, (is, id) -> {
+                id = new Identifier(id.getNamespace(), id.getPath().replace(".json", ""));
+                MultisResourceManager.readResourceFromInputStream("string", id, is);
+            });
 
-                    MultisStringResource stringResource = new MultisStringResource();
-                    stringResource.readFromInputStream(is);
+            //Get all models
+            Collection<Identifier> textureIDs = pack.findResources(ResourceType.CLIENT_RESOURCES, namespace, "multis/textures", 100, p -> p.endsWith(".png"));
 
-                    MultisResourceManager.setResource(scriptID, stringResource);
+            foreachIDToInputStream(textureIDs, pack, ResourceType.CLIENT_RESOURCES, (is, id) -> {
+                id = new Identifier(id.getNamespace(), id.getPath().replace(".png", ""));
+                MultisResourceManager.readResourceFromInputStream("binary", id, is);
+            });
 
-                    is.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            //Get all item scripts
+            Collection<Identifier> scriptIDs = pack.findResources(ResourceType.SERVER_DATA, namespace, "multis/scripts/items", 100, p -> p.endsWith(".lua"));
+
+            foreachIDToInputStream(scriptIDs, pack, ResourceType.SERVER_DATA, (is, id) -> {
+                id = new Identifier(id.getNamespace(), id.getPath().replace(".lua", ""));
+                String[] splitPath = id.getPath().split("/");
+                String itemName = splitPath[splitPath.length - 1];
+
+                MultisItem item = MultisObjectManager.registerItem(new Identifier(id.getNamespace(), itemName), false);
+
+                MultisResourceManager.readResourceFromInputStream("string", id, is);
+            });
+        }
+    }
+
+    private static void foreachIDToInputStream(Collection<Identifier> ids, ResourcePack pack, ResourceType type, BiConsumer<InputStream, Identifier> streamConsumer) {
+        for (Identifier resourceID : ids) {
+            try (InputStream is = pack.open(type, resourceID)) {
+                if (is == null)
+                    continue;
+
+                streamConsumer.accept(is, resourceID);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-
     }
 
     private static class MultisPackMetadataReader implements ResourceMetadataReader<MultisPackMetadata> {
