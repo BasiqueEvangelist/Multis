@@ -2,14 +2,18 @@ package net.blancworks.multis;
 
 import me.shedaniel.architectury.registry.DeferredRegister;
 import me.shedaniel.architectury.registry.RegistrySupplier;
+import me.shedaniel.architectury.registry.ReloadListeners;
 import net.blancworks.api.scripting.scripts.BWLuaScript;
-import net.blancworks.multis.datapack.MultisDatapackManager;
+import net.blancworks.multis.datapack.MultisDatapackReloadManager;
 import net.blancworks.multis.lua.LuaEnvironment;
 import net.blancworks.multis.minecraft.item.MultisMinecraftItem;
 import net.blancworks.multis.networking.MultisNetworkManager;
 import net.blancworks.multis.rendering.MultisRenderingManager;
 import net.blancworks.multis.resources.MultisResourceManager;
 import net.minecraft.item.Item;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceType;
+import net.minecraft.resource.SynchronousResourceReloadListener;
 import net.minecraft.util.registry.Registry;
 
 /**
@@ -31,8 +35,10 @@ public class MultisMod {
         ITEMS.register();
 
         BWLuaScript.setupNativesForLua();
-        MultisExpectPlatform.registerReloadListener("datapack", MultisDatapackManager::onDatapackReload);
-
+        MultisExpectPlatform.registerReloadListener("datapack", MultisDatapackReloadManager::onDatapackReload);
+        ReloadListeners.registerReloadListener(ResourceType.CLIENT_RESOURCES, (SynchronousResourceReloadListener) manager -> {
+            MultisResourceManager.resourceManager = manager;
+        });
 
         LuaEnvironment.init();
     }

@@ -3,6 +3,7 @@ package net.blancworks.multis.datapack;
 import com.google.gson.JsonObject;
 import net.blancworks.multis.access.ReloadableResourceManagerImplAccessor;
 import net.blancworks.multis.networking.MultisNetworkManager;
+import net.blancworks.multis.rendering.model.MultisModelManager;
 import net.blancworks.multis.resources.MultisResourceManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourcePack;
@@ -19,7 +20,7 @@ import java.util.function.BiConsumer;
  * This class is responsible for loading and file-watching assets from datapacks.
  * This class is assumed to be SERVER-SIDE ONLY, as it handles loading from datapacks, which only happens on the server.
  */
-public class MultisDatapackManager {
+public class MultisDatapackReloadManager {
 
     private static final MultisPackMetadataReader reader = new MultisPackMetadataReader();
 
@@ -29,6 +30,7 @@ public class MultisDatapackManager {
      * @param manager Resource manager to manage datapacks.
      */
     public static void onDatapackReload(ResourceManager manager) {
+        MultisModelManager.clearCache();
 
         SortedSet<MultisPackMetadata> packMetas = new TreeSet<MultisPackMetadata>(Comparator.comparingInt(k -> k.priority));
 
@@ -63,16 +65,25 @@ public class MultisDatapackManager {
 
         //Iterate server data (json and scripts)
         for (String namespace : pack.getNamespaces(ResourceType.SERVER_DATA)) {
+            LinkedList<Identifier> changedIDs = new LinkedList<>();
+
+            //Lang files
+            Collection<Identifier> langIDs = pack.findResources(ResourceType.CLIENT_RESOURCES, namespace, "multis/lang", 100, p -> p.endsWith(".json"));
+
+            foreachIDToInputStream(langIDs, pack, ResourceType.CLIENT_RESOURCES, (is, id) -> {
+                id = new Identifier(id.getNamespace(), id.getPath().replace(".json", ""));
+                boolean changed = MultisResourceManager.readResourceFromInputStream("string", id, is);
+                if (changed)
+                    changedIDs.add(id);
+            });
 
             //Get all textures
-            Collection<Identifier> modelIDs = pack.findResources(ResourceType.CLIENT_RESOURCES, namespace, "multis/models", 100, p -> p.endsWith(".png"));
-
-            LinkedList<Identifier> changedIDs = new LinkedList<>();
+            Collection<Identifier> modelIDs = pack.findResources(ResourceType.CLIENT_RESOURCES, namespace, "multis/models", 100, p -> p.endsWith(".json"));
 
             foreachIDToInputStream(modelIDs, pack, ResourceType.CLIENT_RESOURCES, (is, id) -> {
                 id = new Identifier(id.getNamespace(), id.getPath().replace(".json", ""));
                 boolean changed = MultisResourceManager.readResourceFromInputStream("string", id, is);
-                if(changed)
+                if (changed)
                     changedIDs.add(id);
             });
 
@@ -83,7 +94,7 @@ public class MultisDatapackManager {
                 id = new Identifier(id.getNamespace(), id.getPath().replace(".png", ""));
                 boolean changed = MultisResourceManager.readResourceFromInputStream("binary", id, is);
 
-                if(changed)
+                if (changed)
                     changedIDs.add(id);
             });
 
@@ -97,7 +108,7 @@ public class MultisDatapackManager {
 
                 boolean changed = MultisResourceManager.readResourceFromInputStream("string", id, is);
 
-                if(changed)
+                if (changed)
                     changedIDs.add(id);
             });
 

@@ -33,16 +33,21 @@ public abstract class ItemRendererMixin {
             if (item != null && !stack.isEmpty() && item.model != null) {
                 matrices.push();
 
-                item.model.getTransformation().getTransformation(renderMode).apply(leftHanded, matrices);
-                matrices.translate(-0.5D, -0.5D, -0.5D);
+                try {
+                    item.model.transformation.getTransformation(renderMode).apply(leftHanded, matrices);
+                    matrices.translate(-0.5D, -0.5D, -0.5D);
 
-                RenderLayer itemLayer = RenderLayer.getItemEntityTranslucentCull(MultisRenderingManager.itemAtlasID);
+                /*RenderLayer itemLayer = RenderLayer.getItemEntityTranslucentCull(MultisRenderingManager.itemAtlasID);
                 RenderLayer enchantLayer = RenderLayer.getEntityGlint();
 
                 VertexConsumer consumer = stack.hasGlint() ? VertexConsumers.dual(vertexConsumers.getBuffer(itemLayer), vertexConsumers.getBuffer(enchantLayer)) : vertexConsumers.getBuffer(itemLayer);
 
-                this.renderBakedItemModel(model, stack, light, overlay, matrices, consumer);
+                this.renderBakedItemModel(model, stack, light, overlay, matrices, consumer);*/
 
+                    item.model.render(matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 matrices.pop();
 
                 ci.cancel();
@@ -52,29 +57,12 @@ public abstract class ItemRendererMixin {
         }
     }
 
-    @Inject(method = "renderBakedItemQuads", cancellable = true, at = @At("HEAD"))
-    private void renderBakedItemQuads(MatrixStack matrices, VertexConsumer vertices, List<BakedQuad> quads, ItemStack stack, int light, int overlay, CallbackInfo ci) {
-        try {
-            MultisItem item = MultisItemManager.getItemFromStack(stack);
-
-            if (item != null && item.model != null && item.model.texture != null && item.model.texture.isReady) {
-
-                item.model.texture.debug = MinecraftClient.getInstance().mouse.wasRightButtonClicked();
-                item.model.render(matrices, vertices, overlay, light);
-
-                ci.cancel();
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
     @Inject(method = "renderGuiItemModel", at = @At("HEAD"))
     private void renderGuiItemModelHead(ItemStack stack, int x, int y, BakedModel model, CallbackInfo ci) {
         try {
             MultisItem item = MultisItemManager.getItemFromStack(stack);
 
-            if (item != null && item.model != null && !item.model.isSideLit())
+            if (item != null && item.model != null && !item.model.guiSideLit)
                 DiffuseLighting.disableGuiDepthLighting();
         } catch (Throwable t) {
 
@@ -86,7 +74,7 @@ public abstract class ItemRendererMixin {
         try {
             MultisItem item = MultisItemManager.getItemFromStack(stack);
 
-            if (item != null && item.model != null && !item.model.isSideLit())
+            if (item != null && item.model != null && !item.model.guiSideLit)
                 DiffuseLighting.enableGuiDepthLighting();
         } catch (Throwable t) {
 

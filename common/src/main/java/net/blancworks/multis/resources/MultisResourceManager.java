@@ -4,7 +4,9 @@ import me.shedaniel.architectury.event.events.client.ClientPlayerEvent;
 import net.blancworks.multis.lua.LuaEnvironment;
 import net.blancworks.multis.objects.item.MultisItemManager;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Language;
 
 import java.io.InputStream;
 import java.util.*;
@@ -15,9 +17,13 @@ import java.util.function.Supplier;
  * The collection of all resources for Multis.
  */
 public class MultisResourceManager {
+    public static ResourceManager resourceManager;
+
     private static final Map<Identifier, MultisResource> resources = new HashMap<>();
 
     private static final Map<Identifier, List<Consumer<MultisResource>>> changeListeners = new HashMap<>();
+
+    private static final HashMap<>
 
     private static final Map<String, Supplier<MultisResource>> resourceFactories = new HashMap<String, Supplier<MultisResource>>() {{
         put("string", MultisStringResource::new);
@@ -32,6 +38,8 @@ public class MultisResourceManager {
                 MultisItemManager.clear();
                 LuaEnvironment.clear();
             }
+
+
         });
     }
 
@@ -72,6 +80,9 @@ public class MultisResourceManager {
         }
     }
 
+    private static void onLangReload(String lang, MultisResource<String> resource){
+
+    }
 
     /**
      * Reads and registers a resource from a packet.
