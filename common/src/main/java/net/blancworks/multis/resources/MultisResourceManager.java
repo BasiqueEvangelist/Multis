@@ -1,15 +1,23 @@
 package net.blancworks.multis.resources;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import me.shedaniel.architectury.event.events.client.ClientPlayerEvent;
 import net.blancworks.multis.lua.LuaEnvironment;
 import net.blancworks.multis.objects.item.MultisItemManager;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.resource.language.LanguageDefinition;
+import net.minecraft.client.resource.language.LanguageManager;
+import net.minecraft.client.resource.language.TranslationStorage;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.util.Language;
 
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -23,7 +31,9 @@ public class MultisResourceManager {
 
     private static final Map<Identifier, List<Consumer<MultisResource>>> changeListeners = new HashMap<>();
 
-    private static final HashMap<>
+    private static final List<BiConsumer<Identifier, MultisResource>> globalChangeListeners = new ArrayList<>();
+
+    private static final HashMap<String, MultisLang> multisLanguageMaps = new HashMap<>();
 
     private static final Map<String, Supplier<MultisResource>> resourceFactories = new HashMap<String, Supplier<MultisResource>>() {{
         put("string", MultisStringResource::new);
@@ -37,10 +47,11 @@ public class MultisResourceManager {
                 resources.clear();
                 MultisItemManager.clear();
                 LuaEnvironment.clear();
+                multisLanguageMaps.clear();
             }
-
-
         });
+
+        globalChangeListeners.add(MultisResourceManager::onLangReload);
     }
 
     public static synchronized MultisResource setResource(Identifier id, MultisResource resource) {
@@ -75,13 +86,31 @@ public class MultisResourceManager {
     private static synchronized void notifyListeners(Identifier id, MultisResource newResource) {
         List<Consumer<MultisResource>> listenerList = changeListeners.computeIfAbsent(id, k -> new ArrayList<>());
 
+        for (BiConsumer<Identifier, MultisResource> consumer : globalChangeListeners) {
+            consumer.accept(id, newResource);
+        }
+
         for (Consumer<MultisResource> consumer : listenerList) {
             consumer.accept(newResource);
         }
     }
 
-    private static void onLangReload(String lang, MultisResource<String> resource){
+    private static void onLangReload(Identifier id, MultisResource<String> resource) {
+        if (id.getPath().startsWith("multis/lang")) {
+            String[] langID = id.getPath().split("/");
+            String last = langID[langID.length - 1];
 
+            JsonObject jobject = JsonHelper.deserialize(resource.getValue());
+
+            MultisLang lang = multisLanguageMaps.computeIfAbsent(last, (i) -> new MultisLang());
+            lang.code = last;
+            Map<String, String> m = lang.translations;
+
+
+            for (Map.Entry<String, JsonElement> entry : jobject.entrySet()) {
+                m.put(entry.getKey(), entry.getValue().getAsString());
+            }
+        }
     }
 
     /**
@@ -168,5 +197,27 @@ public class MultisResourceManager {
         for (Map.Entry<Identifier, MultisResource> entry : resources.entrySet()) {
             idQueue.add(entry.getKey());
         }
+    }
+
+    public static String getTranslation(String key) {
+        String code = MinecraftClient.getInstance().getLanguageManager().getLanguage().getCode();
+        MultisLang lang = multisLanguageMaps.get(code);
+
+        if (lang == null) return key;
+
+        String ret = lang.translations.get(key);
+
+        if(ret == null) return key;
+
+        return ret;
+    }
+
+    /**
+     * Represents a language file for Multis
+     * Vanilla reloads the entire resource pack whenever you change your language, we're just going to opt to store the lang files in memory here isntead.
+     */
+    private static class MultisLang {
+        public String code = null;
+        public HashMap<String, String> translations = new HashMap<>();
     }
 }

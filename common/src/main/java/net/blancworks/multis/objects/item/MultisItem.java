@@ -33,8 +33,12 @@ public class MultisItem {
 
     public MultisModel model;
 
+    public String translationKey;
+
     public void init(Identifier id) {
         this.id = id;
+
+        translationKey = "item." + id.getNamespace() + "." + id.getPath().replace("/",".");
 
         //Script ID is the same namespace and item name, but the path is slightly modified.
         scriptID = new Identifier(id.getNamespace(), "multis/scripts/items/" + id.getPath());
